@@ -1,6 +1,7 @@
 	.data
 
-invalid_str:	.asciiz	"NaN, "
+invalid_content_str:	.asciiz	"NaN, "
+invalid_length_str:		.asciiz	"Invalid Length, "
 comma:			.asciiz	", "
 input_str:	.space	1001
 curr_str:	.space	1001
@@ -25,6 +26,9 @@ main:
 loop:
 	lb $s0, 0($s2)					#Load character into $s0
 	
+	slti $t1, $t9, 9
+	beq $t1, $zero, length_error
+	
 	beq $s0, $zero, print_strings	#Check if at end of input
 	beq $s0, '\n', print_strings	#Check if at end of input
 	beq $s0, ',', process_curr		#Process chars at the end of the current substring
@@ -39,7 +43,28 @@ loop:
 	j loop							#Continue loop
 	
 
+space_loop:
+	addi $s2, $s2, 1				#Go to next character in current string
+	lb $s0, 0($s2)					#Load character into $s0
+	beq $s0, ' ', space_loop		#Skip space if at the beginning or at the end
+	beq $s0, $zero, print_strings	#Check if at end of input
+	beq $s0, '\n', print_strings	#Check if at end of input
+	beq $s0, ',', process_curr		#Process chars at the end of the current substring
+	
+	j is_valid						#Check if this is a valid char after reading spaces
+	
+
+is_valid:
+	bne $t8, $zero, main_error		#If previous valid char has been read then NaN
+	sb $s0, 0($s1)					#First valid char encountered so save in curr_str
+	li $t8, 1						#Set seen valid character flag
+	or $s3, $zero, $s1
+	addi $s1, $s1, 1				#Go to next empty place in curr_str
+	addi $s2, $s2, 1				#Go to next character from input
+	addi $t9, $t9, 1				#Increment current substring length counter (max 8)
+	
+	j loop							#Back to main loop
 
 	
-	
+
 	
