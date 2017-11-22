@@ -1,7 +1,7 @@
 	.data
 
 invalid_content_str:	.asciiz	"NaN "
-invalid_length_str:		.asciiz	"Invalid Length "
+invalid_length_str:		.asciiz	"Large String "
 comma:					.asciiz	" "
 input_str:				.space	1001
 curr_str:				.space	1001
@@ -106,13 +106,47 @@ length_error:
 	li $v0, 4						#Print invalid_content_str
 	syscall
 	
+	add $s1, $s1, $t9				#Move pointer for writing to current string to an empty cell
+	or $s3, $zero, $s1				#Update the head of current string accordingly
 	and $t8, $t8, $zero				#Reset seen valid character flag
 	and $t9, $t9, $zero				#Reset substring counter
 	
 	j skip_loop						#Skip to next substring
 	
 
+skip_loop:
+	addi $s2, $s2, 1				#Go to next character in current string
+	lb $s0, 0($s2)					#Load character into $s0
+	beq $s0, ',', loop				#Check for spaces at the beginning of new substring
+	beq $s0, $zero, print_strings	#Check if at end of input
+	beq $s0, '\n', print_strings	#Check if at end of input
+	bne $s0, ',', skip_loop			#Continue loop if space is seen
+	sb $s0, 0($s1)					#First valid char encountered so save in curr_str
+	or $s3, $s1, $zero				#If letter is seen then set head of current string accordingly
+	addi $s1, $s1, 1				#Move to next character
+	addi $s2, $s2, 1				#Move to next character
+	addi $t9, $t9, 1				#Update character counter
+	
+	
+	j loop							#Continue loop
+	
+	
+end:
+	add $t0, $s2, -1				#Check previous character
+	lb $t1, 0($t0)					#Load the character into $t1
+	beq $t1, ',', print_end			#If the last character was a comma then we know this was an invalid string
+	
+	li $v0, 10						#End program
+	syscall
 
+
+print_end:
+	la $a0, invalid_content_str		#Load address of invalid_content_str
+	li $v0, 4						#Print error message
+	syscall
+	
+	li $v0, 10						#End the program
+	syscall
 	
 	
 	
