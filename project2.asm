@@ -47,6 +47,7 @@ space_loop:
 	addi $s2, $s2, 1				#Go to next character in current string
 	lb $s0, 0($s2)					#Load character into $s0
 	beq $s0, ' ', space_loop		#Skip space if at the beginning or at the end
+	beq $s0, '\t', space_loop
 	beq $s0, $zero, print_strings	#Check if at end of input
 	beq $s0, '\n', print_strings	#Check if at end of input
 	beq $s0, ',', process_curr		#Process chars at the end of the current substring
@@ -69,7 +70,7 @@ is_valid:
 process_curr:
 	la $a0, ($s3)					#Load beginning of current substring into $a0 as argument
 	beq $t8, $zero, main_error		#If letter has not been seen then string is not valid
-	jal sub_2						#Go to subroutine 2
+	jal subprogram_2						#Go to subroutine 2
 	
 	addi $s2, $s2, 1				#Go to next character from input
 	and $t8, $t8, $zero				#Reset seen valid character flag
@@ -84,7 +85,7 @@ print_strings:
 	lb $t1, 0($s3)					#Load first character in current substring
 	beq $t1, '\n', end				#Check if at end of input string
 	beq $t1, $zero, end				#Check if at end of input string
-	jal sub_2						#Go to subroutine 2
+	jal subprogram_2						#Go to subroutine 2
 	j end
 	
 	
@@ -121,11 +122,11 @@ skip_loop:
 	beq $s0, $zero, print_strings	#Check if at end of input
 	beq $s0, '\n', print_strings	#Check if at end of input
 	bne $s0, ',', skip_loop			#Continue loop if space is seen
-	sb $s0, 0($s1)					#First valid char encountered so save in curr_str
-	or $s3, $s1, $zero				#If letter is seen then set head of current string accordingly
-	addi $s1, $s1, 1				#Move to next character
-	addi $s2, $s2, 1				#Move to next character
-	addi $t9, $t9, 1				#Update character counter
+	#sb $s0, 0($s1)					#First valid char encountered so save in curr_str
+	#or $s3, $s1, $zero				#If letter is seen then set head of current string accordingly
+	#addi $s1, $s1, 1				#Move to next character
+	#addi $s2, $s2, 1				#Move to next character
+	#addi $t9, $t9, 1				#Update character counter
 	
 	
 	j loop							#Continue loop
@@ -147,6 +148,34 @@ print_end:
 	
 	li $v0, 10						#End the program
 	syscall
+	
+subprogram_1:
+	sll $t2, $t2, 4					#Multiply by 16
+	
+	slti $t4, $t3, ':'				#Check if character is a number
+	bne $t4, $zero, num_subprogram_1		#Take care of character being a number case
+	
+	slti $t4, $t3, 'G'				#Check if the character is uppercase
+	bne $t4, $zero, upper_subprogram_1		#Take care of character being uppercase
+	
+	addi $t4, $t3, -87				#Subtract 87 from lowercase to get hexadecimal value
+	add $t2, $t2, $t4				#Add translated character to running sum
+	
+	jr $ra							#Return to subprogram_2
+	
+
+num_subprogram_1:
+	addi $t4, $t3, -48				#Subract 48 from number to get hexadecimal value					
+	add $t2, $t2, $t4				#Add translated character to running sum
+	jr $ra							#Return to subprogram_2
+	
+
+upper_subprogram_1:
+	addi $t4, $t3, -55				#Subract 55 from uppercase to get hexadecimal value
+	add $t2, $t2, $t4				#Add translated character to running sum
+	
+	jr $ra							#Return to subprogram_2
+	
 	
 	
 	
