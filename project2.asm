@@ -177,5 +177,63 @@ upper_subprogram_1:
 	jr $ra							#Return to subprogram_2
 	
 	
+
+subprogram_2:
+	la $t0, ($a0)					#Load current substring head from argument $a0 into $t0
+	addi $sp, $sp, -12				#Make space on the stack for return addresses and return values
+	sw $ra, 0($sp)					#Save return address on the stack
+	and $t1, $t1, $zero				#Character counter up to value of $t9
+	and $t2, $t2, $zero				#Will hold the unsigned integer to be printed
+	and $t3, $t3, $zero				#Will hold the characters being read in
+	
+subprogram_2_loop:
+	slt $t4, $t1, $t9				#Check if counter is less than substring length
+	beq $t4, $zero, return_subprogram_2	#If equal or greater than, then return from subprogram_2
+	lb $t3, 0($t0)					#Load next character into $t3
+	
+	slti $t4, $t3, '0'				#Check if current character is less than ascii value of '0'
+	bne $t4, $zero, subprogram_2_error		#Substring is not a valid string
+	
+	slti $t4, $t3, 'A'				#Check if current character is less than ascii value of 'A'
+	slti $t5, $t3, ':'				#Check if current character is less than ascii value of ':'
+	bne $t4, $t5, subprogram_2_error		#If checks are not equal then character is between '9' and 'A'
+	
+	slti $t4, $t3, 'a'				#Check if current character is less than ascii value of 'a'
+	slti $t5, $t3, 'G'				#Check if current character is less than ascii value of 'G'
+	bne $t4, $t5, subprogram_2_error		#If checks are not equal then character is between 'F' and 'a'
+	
+	slti $t4, $t3, 'g'
+	beq $t4, $zero, subprogram_2_error		#Substring is not a valid string
+	
+	jal subprogram_1						#Go to subprogram_1
+	
+	addi $t1, $t1, 1				#Increment character counter
+	addi $t0, $t0, 1				#Go to the next character in the substring
+	
+	j subprogram_2_loop					#Continue the loop
 	
 	
+subprogram_2_error:
+	lw $ra, 0($sp)					#Restore return address from the stack
+	addi $sp, $sp, 12				#Return space on the stack
+	
+	la $a0, invalid_content_str		#Load address of invalid_content_str
+	li $v0, 4						#Print invalid_content_str
+	syscall
+	
+	jr $ra							#Return to main/process_curr
+	
+	
+return_subprogram_2:
+	li $t4, 10000					#Load 10000 into $t4 for splitting $t2
+	divu $t2, $t4					#Split unsigned number of $t2 and $t4
+	
+	mflo $t5						#Move upper bits into $t5
+	sw $t5,  4($sp)					#Save upper bits onto stack
+	mfhi $t5						#Move lower bits into $t5
+	sw $t5,  8($sp)					#Save lower bits onto stack
+	jal subprogram_3						#Go to subroutine 3
+	
+	lw $ra,	0($sp)					#Restore return address from the stack
+	addi $sp, $sp, 12				#Return space on the stack
+	jr $ra							#Return to main/process_curr
