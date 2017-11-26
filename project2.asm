@@ -237,3 +237,24 @@ return_subprogram_2:
 	lw $ra,	0($sp)					#Restore return address from the stack
 	addi $sp, $sp, 12				#Return space on the stack
 	jr $ra							#Return to main/process_curr
+	
+	
+subprogram_3:	
+	lw $a0, 4($sp)					#Load the upper bits of the unsigned number from the stack
+	beq $a0, $zero, print_lower		#Don't print if upper bits is just 0
+	li $v0, 1						#Print the integer
+	syscall
+	
+print_lower:
+	lw $a0, 8($sp)					#Load the lower bits of the unsigned number from the stack
+	li $v0, 1						#Print the number
+	syscall
+	
+	la $a0, comma					#Load comma string into $a0
+	li $v0, 4						#Print comma string for separating the substrings
+	syscall
+	
+	jr $ra							#Return back to subprogram_2
+	
+	
+	
