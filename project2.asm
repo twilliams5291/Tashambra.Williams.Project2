@@ -96,6 +96,7 @@ main_error:
 		
 	add $s1, $s1, $t9				#Move pointer for writing to current string to an empty cell
 	or $s3, $zero, $s1				#Update the head of current string accordingly
+	or $t1, $t8, $zero
 	and $t8, $t8, $zero				#Reset seen valid character flag
 	and $t9, $t9, $zero				#Reset substring counter
 	
@@ -109,6 +110,7 @@ length_error:
 	
 	add $s1, $s1, $t9				#Move pointer for writing to current string to an empty cell
 	or $s3, $zero, $s1				#Update the head of current string accordingly
+	or $t1, $t8, $zero
 	and $t8, $t8, $zero				#Reset seen valid character flag
 	and $t9, $t9, $zero				#Reset substring counter
 	
@@ -118,10 +120,12 @@ length_error:
 skip_loop:
 	addi $s2, $s2, 1				#Go to next character in current string
 	lb $s0, 0($s2)					#Load character into $s0
-	beq $s0, ' ', loop				#Check for spaces at the beginning of new substring
+	#beq $s0, ' ', loop				#Check for spaces at the beginning of new substring
 	beq $s0, $zero, print_strings	#Check if at end of input
 	beq $s0, '\n', print_strings	#Check if at end of input
+	beq $t1, $zero, loop
 	bne $s0, ',', skip_loop			#Continue loop if space is seen
+	addi $s2, $s2, 1
 	#sb $s0, 0($s1)					#First valid char encountered so save in curr_str
 	#or $s3, $s1, $zero				#If letter is seen then set head of current string accordingly
 	#addi $s1, $s1, 1				#Move to next character
@@ -225,7 +229,7 @@ subprogram_2_error:
 	
 	
 return_subprogram_2:
-	li $t4, 10000					#Load 10000 into $t4 for splitting $t2
+	li $t4, 10						#Load 10000 into $t4 for splitting $t2
 	divu $t2, $t4					#Split unsigned number of $t2 and $t4
 	
 	mflo $t5						#Move upper bits into $t5
