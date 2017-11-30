@@ -118,7 +118,7 @@ length_error:
 skip_loop:
 	addi $s2, $s2, 1				#Go to next character in current string
 	lb $s0, 0($s2)					#Load character into $s0
-	beq $s0, ',', loop				#Check for spaces at the beginning of new substring
+	beq $s0, ' ', loop				#Check for spaces at the beginning of new substring
 	beq $s0, $zero, print_strings	#Check if at end of input
 	beq $s0, '\n', print_strings	#Check if at end of input
 	bne $s0, ',', skip_loop			#Continue loop if space is seen
